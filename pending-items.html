@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pending Items — My Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --border: #e0e4ec;
+      --text: #1a2233;
+      --text-muted: #6b7a99;
+      --accent: #1a56db;
+      --accent-light: #e8f0fe;
+      --high: #dc2626;
+      --high-bg: #fef2f2;
+      --med: #d97706;
+      --med-bg: #fffbeb;
+      --low: #16a34a;
+      --low-bg: #f0fdf4;
+      --status-pending: #6366f1;
+      --status-progress: #0891b2;
+      --status-blocked: #dc2626;
+      --status-done: #16a34a;
+      --radius: 10px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-logo {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 18px;
+    }
+    .header h1 { font-size: 17px; font-weight: 600; color: var(--text); }
+    .header-date { font-size: 13px; color: var(--text-muted); }
+    .btn-add {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 18px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      transition: background 0.15s;
+    }
+    .btn-add:hover { background: #1648c2; }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      padding: 20px 32px 0;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      flex: 1;
+      box-shadow: var(--shadow);
+    }
+    .stat-card .stat-value { font-size: 26px; font-weight: 700; }
+    .stat-card .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .stat-card.high .stat-value { color: var(--high); }
+    .stat-card.progress .stat-value { color: var(--status-progress); }
+    .stat-card.blocked .stat-value { color: var(--status-blocked); }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      padding: 18px 32px 0;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-label { font-size: 13px; color: var(--text-muted); margin-right: 4px; }
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .filter-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+
+    /* search */
+    .search-wrap { margin-left: auto; position: relative; }
+    .search-input {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px 6px 32px;
+      font-size: 13px;
+      width: 200px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .search-icon {
+      position: absolute; left: 10px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 13px; color: var(--text-muted);
+    }
+
+    /* ── Items grid ── */
+    .items-container {
+      padding: 20px 32px 40px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 14px;
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state p { font-size: 15px; }
+
+    /* ── Item card ── */
+    .item-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: box-shadow 0.15s, transform 0.1s;
+      position: relative;
+    }
+    .item-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.10); transform: translateY(-1px); }
+    .item-card.done { opacity: 0.55; }
+
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .card-title { font-size: 15px; font-weight: 600; color: var(--text); flex: 1; line-height: 1.4; }
+    .card-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; }
+    .item-card:hover .card-actions { opacity: 1; }
+    .action-btn {
+      background: none; border: none; cursor: pointer;
+      width: 28px; height: 28px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: var(--text-muted);
+      transition: background 0.1s, color 0.1s;
+    }
+    .action-btn:hover { background: var(--bg); color: var(--text); }
+    .action-btn.delete:hover { background: #fef2f2; color: var(--high); }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .card-notes {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-radius: 6px;
+      padding: 8px 10px;
+      line-height: 1.5;
+      border-left: 3px solid var(--border);
+      font-style: italic;
+    }
+
+    .card-footer { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    /* Priority badge */
+    .badge-priority {
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 4px;
+      padding: 2px 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .badge-priority.high { background: var(--high-bg); color: var(--high); }
+    .badge-priority.medium { background: var(--med-bg); color: var(--med); }
+    .badge-priority.low { background: var(--low-bg); color: var(--low); }
+
+    /* Status badge */
+    .badge-status {
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: 20px;
+      padding: 2px 10px;
+      border: 1px solid currentColor;
+    }
+    .badge-status.pending { color: var(--status-pending); background: #f0f0ff; border-color: var(--status-pending); }
+    .badge-status.in-progress { color: var(--status-progress); background: #ecfeff; border-color: var(--status-progress); }
+    .badge-status.blocked { color: var(--status-blocked); background: #fef2f2; border-color: var(--status-blocked); }
+    .badge-status.done { color: var(--status-done); background: #f0fdf4; border-color: var(--status-done); }
+
+    .card-created { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+
+    /* Priority left border */
+    .item-card[data-priority="high"] { border-left: 3px solid var(--high); }
+    .item-card[data-priority="medium"] { border-left: 3px solid var(--med); }
+    .item-card[data-priority="low"] { border-left: 3px solid var(--low); }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: 14px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+      padding: 28px;
+      width: 520px;
+      max-width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .modal-title { font-size: 17px; font-weight: 600; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-label { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+    .form-input, .form-textarea, .form-select {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
+    .form-textarea { min-height: 80px; resize: vertical; }
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+    .btn-cancel {
+      background: none; border: 1px solid var(--border);
+      border-radius: 8px; padding: 9px 18px;
+      font-size: 14px; cursor: pointer; color: var(--text-muted);
+    }
+    .btn-cancel:hover { background: var(--bg); }
+    .btn-save {
+      background: var(--accent); color: white;
+      border: none; border-radius: 8px;
+      padding: 9px 22px; font-size: 14px; font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-save:hover { background: #1648c2; }
+
+    /* ── Confirm dialog ── */
+    .confirm-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+    }
+    .confirm-overlay.open { display: flex; }
+    .confirm-box {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 24px;
+      width: 360px;
+      max-width: 90vw;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    }
+    .confirm-box h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+    .confirm-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; }
+    .confirm-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-danger {
+      background: var(--high); color: white;
+      border: none; border-radius: 8px;
+      padding: 8px 18px; font-size: 13px; font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-danger:hover { background: #b91c1c; }
+
+    /* ── Section header ── */
+    .section-header {
+      padding: 4px 32px 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    @media (max-width: 600px) {
+      .header { padding: 14px 16px; }
+      .stats-bar, .filter-bar, .items-container { padding-left: 16px; padding-right: 16px; }
+      .stats-bar { gap: 8px; }
+      .section-header { padding-left: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <div class="header-logo">📋</div>
+    <div>
+      <h1>Pending Items</h1>
+      <div class="header-date" id="headerDate"></div>
+    </div>
+  </div>
+  <button class="btn-add" onclick="openModal()">＋ Add item</button>
+</header>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat-card">
+    <div class="stat-value" id="statTotal">0</div>
+    <div class="stat-label">Total active</div>
+  </div>
+  <div class="stat-card high">
+    <div class="stat-value" id="statHigh">0</div>
+    <div class="stat-label">High priority</div>
+  </div>
+  <div class="stat-card progress">
+    <div class="stat-value" id="statProgress">0</div>
+    <div class="stat-label">In progress</div>
+  </div>
+  <div class="stat-card blocked">
+    <div class="stat-value" id="statBlocked">0</div>
+    <div class="stat-label">Blocked</div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filter-bar">
+  <span class="filter-label">Status:</span>
+  <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
+  <button class="filter-btn" data-filter="pending" onclick="setFilter('pending', this)">Pending</button>
+  <button class="filter-btn" data-filter="in-progress" onclick="setFilter('in-progress', this)">In Progress</button>
+  <button class="filter-btn" data-filter="blocked" onclick="setFilter('blocked', this)">Blocked</button>
+  <button class="filter-btn" data-filter="done" onclick="setFilter('done', this)">Done</button>
+  <div class="filter-sep"></div>
+  <span class="filter-label">Priority:</span>
+  <button class="filter-btn active" data-pfilter="all" onclick="setPriorityFilter('all', this)">All</button>
+  <button class="filter-btn" data-pfilter="high" onclick="setPriorityFilter('high', this)">High</button>
+  <button class="filter-btn" data-pfilter="medium" onclick="setPriorityFilter('medium', this)">Medium</button>
+  <button class="filter-btn" data-pfilter="low" onclick="setPriorityFilter('low', this)">Low</button>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" placeholder="Search items…" oninput="setSearch(this.value)" />
+  </div>
+</div>
+
+<!-- Items -->
+<div class="items-container" id="itemsContainer"></div>
+
+<!-- Modal: Add/Edit -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">New Item</div>
+
+    <div class="form-group">
+      <label class="form-label">Title *</label>
+      <input class="form-input" id="fTitle" placeholder="e.g. Provide expected data for runtime license test" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-textarea" id="fDesc" placeholder="What needs to be done or decided?"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes / Context</label>
+      <textarea class="form-textarea" id="fNotes" placeholder="Extra details, linked project, responsible person…" style="min-height:60px"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select class="form-select" id="fPriority">
+          <option value="high">🔴 High</option>
+          <option value="medium" selected>🟡 Medium</option>
+          <option value="low">🟢 Low</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="fStatus">
+          <option value="pending" selected>Pending</option>
+          <option value="in-progress">In Progress</option>
+          <option value="blocked">Blocked</option>
+          <option value="done">Done</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveItem()">Save item</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm delete -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h3>Remove item?</h3>
+    <p>This action cannot be undone.</p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-danger" onclick="confirmDelete()">Remove</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Data ──────────────────────────────────────────────
+  const STORAGE_KEY = 'pending_items_v1';
+
+  function loadItems() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function saveItems(items) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }
+
+  let items = loadItems();
+
+  // Pre-load a sample item if first visit
+  if (items.length === 0) {
+    items = [
+      {
+        id: Date.now(),
+        title: 'Provide expected data for runtime license test',
+        desc: 'The team needs the expected test dataset to validate the new runtime license before release.',
+        notes: 'CAT-IM release — coordinate with QA team.',
+        priority: 'high',
+        status: 'pending',
+        created: new Date().toISOString()
+      }
+    ];
+    saveItems(items);
+  }
+
+  // ── State ─────────────────────────────────────────────
+  let filterStatus = 'all';
+  let filterPriority = 'all';
+  let searchText = '';
+  let editingId = null;
+  let deletingId = null;
+
+  // ── Render ────────────────────────────────────────────
+  function render() {
+    const container = document.getElementById('itemsContainer');
+
+    let filtered = items.filter(item => {
+      if (filterStatus !== 'all' && item.status !== filterStatus) return false;
+      if (filterPriority !== 'all' && item.priority !== filterPriority) return false;
+      if (searchText) {
+        const q = searchText.toLowerCase();
+        if (!item.title.toLowerCase().includes(q) &&
+            !item.desc.toLowerCase().includes(q) &&
+            !item.notes.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+
+    // Sort: blocked & high first, done last
+    const order = { blocked: 0, pending: 1, 'in-progress': 2, done: 3 };
+    const pOrder = { high: 0, medium: 1, low: 2 };
+    filtered.sort((a, b) => {
+      if (order[a.status] !== order[b.status]) return order[a.status] - order[b.status];
+      return pOrder[a.priority] - pOrder[b.priority];
+    });
+
+    // Stats (always from full items, exclude done)
+    const active = items.filter(i => i.status !== 'done');
+    document.getElementById('statTotal').textContent = active.length;
+    document.getElementById('statHigh').textContent = active.filter(i => i.priority === 'high').length;
+    document.getElementById('statProgress').textContent = items.filter(i => i.status === 'in-progress').length;
+    document.getElementById('statBlocked').textContent = items.filter(i => i.status === 'blocked').length;
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">✅</div>
+          <p>No items match the current filters.</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map(item => {
+      const priorityLabel = item.priority.charAt(0).toUpperCase() + item.priority.slice(1);
+      const statusLabel = { pending: 'Pending', 'in-progress': 'In Progress', blocked: 'Blocked', done: 'Done' }[item.status];
+      const created = new Date(item.created).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+
+      return `
+        <div class="item-card ${item.status === 'done' ? 'done' : ''}" data-priority="${item.priority}">
+          <div class="card-top">
+            <div class="card-title">${escHtml(item.title)}</div>
+            <div class="card-actions">
+              <button class="action-btn" title="Edit" onclick="openModal(${item.id})">✏️</button>
+              <button class="action-btn delete" title="Remove" onclick="askDelete(${item.id})">🗑️</button>
+            </div>
+          </div>
+          ${item.desc ? `<div class="card-desc">${escHtml(item.desc)}</div>` : ''}
+          ${item.notes ? `<div class="card-notes">${escHtml(item.notes)}</div>` : ''}
+          <div class="card-footer">
+            <span class="badge-priority ${item.priority}">${priorityLabel}</span>
+            <span class="badge-status ${item.status}">${statusLabel}</span>
+            <span class="card-created">${created}</span>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ── Filters ───────────────────────────────────────────
+  function setFilter(val, btn) {
+    filterStatus = val;
+    document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  function setPriorityFilter(val, btn) {
+    filterPriority = val;
+    document.querySelectorAll('[data-pfilter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  function setSearch(val) {
+    searchText = val.trim();
+    render();
+  }
+
+  // ── Modal ─────────────────────────────────────────────
+  function openModal(id) {
+    editingId = id || null;
+    const overlay = document.getElementById('modalOverlay');
+    document.getElementById('modalTitle').textContent = id ? 'Edit Item' : 'New Item';
+
+    if (id) {
+      const item = items.find(i => i.id === id);
+      document.getElementById('fTitle').value = item.title;
+      document.getElementById('fDesc').value = item.desc;
+      document.getElementById('fNotes').value = item.notes;
+      document.getElementById('fPriority').value = item.priority;
+      document.getElementById('fStatus').value = item.status;
+    } else {
+      document.getElementById('fTitle').value = '';
+      document.getElementById('fDesc').value = '';
+      document.getElementById('fNotes').value = '';
+      document.getElementById('fPriority').value = 'medium';
+      document.getElementById('fStatus').value = 'pending';
+    }
+
+    overlay.classList.add('open');
+    setTimeout(() => document.getElementById('fTitle').focus(), 50);
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+    editingId = null;
+  }
+
+  function saveItem() {
+    const title = document.getElementById('fTitle').value.trim();
+    if (!title) {
+      document.getElementById('fTitle').focus();
+      document.getElementById('fTitle').style.borderColor = 'var(--high)';
+      setTimeout(() => document.getElementById('fTitle').style.borderColor = '', 1500);
+      return;
+    }
+
+    const data = {
+      title,
+      desc: document.getElementById('fDesc').value.trim(),
+      notes: document.getElementById('fNotes').value.trim(),
+      priority: document.getElementById('fPriority').value,
+      status: document.getElementById('fStatus').value,
+    };
+
+    if (editingId) {
+      items = items.map(i => i.id === editingId ? { ...i, ...data } : i);
+    } else {
+      items.push({ id: Date.now(), created: new Date().toISOString(), ...data });
+    }
+
+    saveItems(items);
+    closeModal();
+    render();
+  }
+
+  // ── Delete ────────────────────────────────────────────
+  function askDelete(id) {
+    deletingId = id;
+    document.getElementById('confirmOverlay').classList.add('open');
+  }
+
+  function closeConfirm() {
+    document.getElementById('confirmOverlay').classList.remove('open');
+    deletingId = null;
+  }
+
+  function confirmDelete() {
+    items = items.filter(i => i.id !== deletingId);
+    saveItems(items);
+    closeConfirm();
+    render();
+  }
+
+  // ── Keyboard shortcuts ────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeModal(); closeConfirm(); }
+    if (e.key === 'Enter' && document.getElementById('modalOverlay').classList.contains('open')) {
+      if (e.target.tagName !== 'TEXTAREA') saveItem();
+    }
+  });
+
+  // Close modal on overlay click
+  document.getElementById('modalOverlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+  document.getElementById('confirmOverlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeConfirm();
+  });
+
+  // ── Date header ───────────────────────────────────────
+  document.getElementById('headerDate').textContent = new Date().toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
+
+  // ── Init ──────────────────────────────────────────────
+  render();
+</script>
+</body>
+</html>
