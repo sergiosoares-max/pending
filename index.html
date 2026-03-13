@@ -36,6 +36,63 @@
       min-height: 100vh;
     }
 
+    /* ── Setup banner ── */
+    .setup-banner {
+      background: #fffbeb;
+      border-bottom: 2px solid #d97706;
+      padding: 12px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+    }
+    .setup-banner.hidden { display: none; }
+    .setup-banner strong { color: #92400e; }
+    .setup-input {
+      flex: 1;
+      border: 1px solid #d97706;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-family: monospace;
+      color: var(--text);
+      outline: none;
+      max-width: 520px;
+    }
+    .setup-input:focus { border-color: var(--accent); }
+    .btn-setup-save {
+      background: #d97706;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-setup-save:hover { background: #b45309; }
+
+    /* ── Sync status ── */
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 0 32px;
+      height: 28px;
+      background: var(--bg);
+    }
+    .sync-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #ccc;
+    }
+    .sync-dot.ok { background: var(--low); }
+    .sync-dot.loading { background: var(--med); animation: pulse 1s infinite; }
+    .sync-dot.error { background: var(--high); }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
     /* ── Header ── */
     .header {
       background: var(--surface);
@@ -56,8 +113,20 @@
       display: flex; align-items: center; justify-content: center;
       color: white; font-size: 18px;
     }
-    .header h1 { font-size: 17px; font-weight: 600; color: var(--text); }
+    .header h1 { font-size: 17px; font-weight: 600; }
     .header-date { font-size: 13px; color: var(--text-muted); }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .btn-reload {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .btn-reload:hover { border-color: var(--accent); color: var(--accent); }
     .btn-add {
       background: var(--accent);
       color: white;
@@ -71,12 +140,13 @@
       transition: background 0.15s;
     }
     .btn-add:hover { background: #1648c2; }
+    .btn-add:disabled { background: #93aee8; cursor: not-allowed; }
 
     /* ── Stats bar ── */
     .stats-bar {
       display: flex;
       gap: 12px;
-      padding: 20px 32px 0;
+      padding: 16px 32px 0;
     }
     .stat-card {
       background: var(--surface);
@@ -96,11 +166,11 @@
     .filter-bar {
       display: flex;
       gap: 8px;
-      padding: 18px 32px 0;
+      padding: 16px 32px 0;
       flex-wrap: wrap;
       align-items: center;
     }
-    .filter-label { font-size: 13px; color: var(--text-muted); margin-right: 4px; }
+    .filter-label { font-size: 13px; color: var(--text-muted); margin-right: 2px; }
     .filter-btn {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -112,14 +182,8 @@
       transition: all 0.15s;
     }
     .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .filter-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: white;
-    }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
     .filter-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
-
-    /* search */
     .search-wrap { margin-left: auto; position: relative; }
     .search-input {
       border: 1px solid var(--border);
@@ -132,28 +196,34 @@
       outline: none;
     }
     .search-input:focus { border-color: var(--accent); }
-    .search-icon {
-      position: absolute; left: 10px; top: 50%;
-      transform: translateY(-50%);
-      font-size: 13px; color: var(--text-muted);
-    }
+    .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-muted); }
 
     /* ── Items grid ── */
     .items-container {
-      padding: 20px 32px 40px;
+      padding: 18px 32px 40px;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
       gap: 14px;
     }
 
-    .empty-state {
-      grid-column: 1 / -1;
+    /* ── Loading / empty ── */
+    .state-box {
+      grid-column: 1/-1;
       text-align: center;
       padding: 60px 20px;
       color: var(--text-muted);
     }
-    .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
-    .empty-state p { font-size: 15px; }
+    .state-box .icon { font-size: 48px; margin-bottom: 12px; }
+    .state-box p { font-size: 15px; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── Item card ── */
     .item-card {
@@ -166,13 +236,15 @@
       flex-direction: column;
       gap: 10px;
       transition: box-shadow 0.15s, transform 0.1s;
-      position: relative;
     }
     .item-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.10); transform: translateY(-1px); }
     .item-card.done { opacity: 0.55; }
+    .item-card[data-priority="high"]   { border-left: 3px solid var(--high); }
+    .item-card[data-priority="medium"] { border-left: 3px solid var(--med); }
+    .item-card[data-priority="low"]    { border-left: 3px solid var(--low); }
 
     .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-    .card-title { font-size: 15px; font-weight: 600; color: var(--text); flex: 1; line-height: 1.4; }
+    .card-title { font-size: 15px; font-weight: 600; flex: 1; line-height: 1.4; }
     .card-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; }
     .item-card:hover .card-actions { opacity: 1; }
     .action-btn {
@@ -184,96 +256,57 @@
     }
     .action-btn:hover { background: var(--bg); color: var(--text); }
     .action-btn.delete:hover { background: #fef2f2; color: var(--high); }
-
-    .card-desc {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
+    .card-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
     .card-notes {
-      font-size: 12px;
-      color: var(--text-muted);
-      background: var(--bg);
-      border-radius: 6px;
-      padding: 8px 10px;
-      line-height: 1.5;
-      border-left: 3px solid var(--border);
-      font-style: italic;
+      font-size: 12px; color: var(--text-muted);
+      background: var(--bg); border-radius: 6px;
+      padding: 8px 10px; line-height: 1.5;
+      border-left: 3px solid var(--border); font-style: italic;
     }
-
     .card-footer { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
-    /* Priority badge */
     .badge-priority {
-      font-size: 11px;
-      font-weight: 600;
-      border-radius: 4px;
-      padding: 2px 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      font-size: 11px; font-weight: 600;
+      border-radius: 4px; padding: 2px 8px;
+      text-transform: uppercase; letter-spacing: 0.4px;
     }
-    .badge-priority.high { background: var(--high-bg); color: var(--high); }
-    .badge-priority.medium { background: var(--med-bg); color: var(--med); }
-    .badge-priority.low { background: var(--low-bg); color: var(--low); }
+    .badge-priority.high   { background: var(--high-bg); color: var(--high); }
+    .badge-priority.medium { background: var(--med-bg);  color: var(--med); }
+    .badge-priority.low    { background: var(--low-bg);  color: var(--low); }
 
-    /* Status badge */
     .badge-status {
-      font-size: 11px;
-      font-weight: 500;
-      border-radius: 20px;
-      padding: 2px 10px;
-      border: 1px solid currentColor;
+      font-size: 11px; font-weight: 500;
+      border-radius: 20px; padding: 2px 10px; border: 1px solid currentColor;
     }
-    .badge-status.pending { color: var(--status-pending); background: #f0f0ff; border-color: var(--status-pending); }
+    .badge-status.pending     { color: var(--status-pending);  background: #f0f0ff; border-color: var(--status-pending); }
     .badge-status.in-progress { color: var(--status-progress); background: #ecfeff; border-color: var(--status-progress); }
-    .badge-status.blocked { color: var(--status-blocked); background: #fef2f2; border-color: var(--status-blocked); }
-    .badge-status.done { color: var(--status-done); background: #f0fdf4; border-color: var(--status-done); }
+    .badge-status.blocked     { color: var(--status-blocked);  background: #fef2f2; border-color: var(--status-blocked); }
+    .badge-status.done        { color: var(--status-done);     background: #f0fdf4; border-color: var(--status-done); }
 
     .card-created { font-size: 11px; color: var(--text-muted); margin-left: auto; }
 
-    /* Priority left border */
-    .item-card[data-priority="high"] { border-left: 3px solid var(--high); }
-    .item-card[data-priority="medium"] { border-left: 3px solid var(--med); }
-    .item-card[data-priority="low"] { border-left: 3px solid var(--low); }
-
     /* ── Modal ── */
     .modal-overlay {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.35);
-      z-index: 200;
-      align-items: center;
-      justify-content: center;
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35); z-index: 200;
+      align-items: center; justify-content: center;
     }
     .modal-overlay.open { display: flex; }
     .modal {
-      background: var(--surface);
-      border-radius: 14px;
+      background: var(--surface); border-radius: 14px;
       box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-      padding: 28px;
-      width: 520px;
-      max-width: 95vw;
-      max-height: 90vh;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
+      padding: 28px; width: 520px; max-width: 95vw;
+      max-height: 90vh; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 18px;
     }
     .modal-title { font-size: 17px; font-weight: 600; }
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-label { font-size: 13px; font-weight: 500; color: var(--text-muted); }
     .form-input, .form-textarea, .form-select {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 9px 12px;
-      font-size: 14px;
-      font-family: inherit;
-      color: var(--text);
-      background: var(--surface);
-      outline: none;
-      transition: border-color 0.15s;
-      width: 100%;
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 9px 12px; font-size: 14px; font-family: inherit;
+      color: var(--text); background: var(--surface); outline: none;
+      transition: border-color 0.15s; width: 100%;
     }
     .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
     .form-textarea { min-height: 80px; resize: vertical; }
@@ -281,67 +314,71 @@
     .form-row .form-group { flex: 1; }
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
     .btn-cancel {
-      background: none; border: 1px solid var(--border);
-      border-radius: 8px; padding: 9px 18px;
-      font-size: 14px; cursor: pointer; color: var(--text-muted);
+      background: none; border: 1px solid var(--border); border-radius: 8px;
+      padding: 9px 18px; font-size: 14px; cursor: pointer; color: var(--text-muted);
     }
     .btn-cancel:hover { background: var(--bg); }
     .btn-save {
-      background: var(--accent); color: white;
-      border: none; border-radius: 8px;
-      padding: 9px 22px; font-size: 14px; font-weight: 500;
-      cursor: pointer;
+      background: var(--accent); color: white; border: none;
+      border-radius: 8px; padding: 9px 22px; font-size: 14px;
+      font-weight: 500; cursor: pointer;
     }
     .btn-save:hover { background: #1648c2; }
+    .btn-save:disabled { background: #93aee8; cursor: not-allowed; }
 
-    /* ── Confirm dialog ── */
+    /* ── Confirm ── */
     .confirm-overlay {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.35);
-      z-index: 300;
-      align-items: center;
-      justify-content: center;
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35); z-index: 300;
+      align-items: center; justify-content: center;
     }
     .confirm-overlay.open { display: flex; }
     .confirm-box {
-      background: var(--surface);
-      border-radius: 12px;
-      padding: 24px;
-      width: 360px;
-      max-width: 90vw;
+      background: var(--surface); border-radius: 12px;
+      padding: 24px; width: 360px; max-width: 90vw;
       box-shadow: 0 8px 40px rgba(0,0,0,0.18);
     }
     .confirm-box h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
-    .confirm-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; }
+    .confirm-box p  { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; }
     .confirm-actions { display: flex; gap: 10px; justify-content: flex-end; }
     .btn-danger {
-      background: var(--high); color: white;
-      border: none; border-radius: 8px;
-      padding: 8px 18px; font-size: 13px; font-weight: 500;
-      cursor: pointer;
+      background: var(--high); color: white; border: none;
+      border-radius: 8px; padding: 8px 18px; font-size: 13px;
+      font-weight: 500; cursor: pointer;
     }
     .btn-danger:hover { background: #b91c1c; }
 
-    /* ── Section header ── */
-    .section-header {
-      padding: 4px 32px 0;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #1a2233; color: white; border-radius: 8px;
+      padding: 10px 20px; font-size: 13px;
+      opacity: 0; transition: opacity 0.2s;
+      pointer-events: none; z-index: 400; white-space: nowrap;
     }
+    .toast.show { opacity: 1; }
+    .toast.error { background: var(--high); }
 
     @media (max-width: 600px) {
-      .header { padding: 14px 16px; }
-      .stats-bar, .filter-bar, .items-container { padding-left: 16px; padding-right: 16px; }
-      .stats-bar { gap: 8px; }
-      .section-header { padding-left: 16px; }
+      .header, .stats-bar, .filter-bar, .items-container { padding-left: 16px; padding-right: 16px; }
+      .setup-banner { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
+
+<!-- Setup banner (shown until URL is configured) -->
+<div class="setup-banner" id="setupBanner">
+  <span>⚠️ <strong>Setup required:</strong> Paste your Apps Script Web App URL here and click Save</span>
+  <input class="setup-input" id="setupUrl" type="text" placeholder="https://script.google.com/macros/s/…/exec" />
+  <button class="btn-setup-save" onclick="saveScriptUrl()">Save</button>
+</div>
+
+<!-- Sync status bar -->
+<div class="sync-status">
+  <div class="sync-dot" id="syncDot"></div>
+  <span id="syncLabel">Not connected</span>
+</div>
 
 <!-- Header -->
 <header class="header">
@@ -352,25 +389,28 @@
       <div class="header-date" id="headerDate"></div>
     </div>
   </div>
-  <button class="btn-add" onclick="openModal()">＋ Add item</button>
+  <div class="header-right">
+    <button class="btn-reload" onclick="loadItems()" title="Refresh from Google Sheets">↻ Refresh</button>
+    <button class="btn-add" id="btnAdd" onclick="openModal()">＋ Add item</button>
+  </div>
 </header>
 
 <!-- Stats -->
 <div class="stats-bar">
   <div class="stat-card">
-    <div class="stat-value" id="statTotal">0</div>
+    <div class="stat-value" id="statTotal">—</div>
     <div class="stat-label">Total active</div>
   </div>
   <div class="stat-card high">
-    <div class="stat-value" id="statHigh">0</div>
+    <div class="stat-value" id="statHigh">—</div>
     <div class="stat-label">High priority</div>
   </div>
   <div class="stat-card progress">
-    <div class="stat-value" id="statProgress">0</div>
+    <div class="stat-value" id="statProgress">—</div>
     <div class="stat-label">In progress</div>
   </div>
   <div class="stat-card blocked">
-    <div class="stat-value" id="statBlocked">0</div>
+    <div class="stat-value" id="statBlocked">—</div>
     <div class="stat-label">Blocked</div>
   </div>
 </div>
@@ -378,17 +418,17 @@
 <!-- Filters -->
 <div class="filter-bar">
   <span class="filter-label">Status:</span>
-  <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
-  <button class="filter-btn" data-filter="pending" onclick="setFilter('pending', this)">Pending</button>
-  <button class="filter-btn" data-filter="in-progress" onclick="setFilter('in-progress', this)">In Progress</button>
-  <button class="filter-btn" data-filter="blocked" onclick="setFilter('blocked', this)">Blocked</button>
-  <button class="filter-btn" data-filter="done" onclick="setFilter('done', this)">Done</button>
+  <button class="filter-btn active" data-filter="all"         onclick="setFilter('all', this)">All</button>
+  <button class="filter-btn"        data-filter="pending"     onclick="setFilter('pending', this)">Pending</button>
+  <button class="filter-btn"        data-filter="in-progress" onclick="setFilter('in-progress', this)">In Progress</button>
+  <button class="filter-btn"        data-filter="blocked"     onclick="setFilter('blocked', this)">Blocked</button>
+  <button class="filter-btn"        data-filter="done"        onclick="setFilter('done', this)">Done</button>
   <div class="filter-sep"></div>
   <span class="filter-label">Priority:</span>
-  <button class="filter-btn active" data-pfilter="all" onclick="setPriorityFilter('all', this)">All</button>
-  <button class="filter-btn" data-pfilter="high" onclick="setPriorityFilter('high', this)">High</button>
-  <button class="filter-btn" data-pfilter="medium" onclick="setPriorityFilter('medium', this)">Medium</button>
-  <button class="filter-btn" data-pfilter="low" onclick="setPriorityFilter('low', this)">Low</button>
+  <button class="filter-btn active" data-pfilter="all"    onclick="setPriorityFilter('all', this)">All</button>
+  <button class="filter-btn"        data-pfilter="high"   onclick="setPriorityFilter('high', this)">High</button>
+  <button class="filter-btn"        data-pfilter="medium" onclick="setPriorityFilter('medium', this)">Medium</button>
+  <button class="filter-btn"        data-pfilter="low"    onclick="setPriorityFilter('low', this)">Low</button>
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
     <input class="search-input" type="text" placeholder="Search items…" oninput="setSearch(this.value)" />
@@ -396,13 +436,17 @@
 </div>
 
 <!-- Items -->
-<div class="items-container" id="itemsContainer"></div>
+<div class="items-container" id="itemsContainer">
+  <div class="state-box">
+    <div class="spinner"></div>
+    <p>Loading…</p>
+  </div>
+</div>
 
 <!-- Modal: Add/Edit -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-title" id="modalTitle">New Item</div>
-
     <div class="form-group">
       <label class="form-label">Title *</label>
       <input class="form-input" id="fTitle" placeholder="e.g. Provide expected data for runtime license test" />
@@ -434,10 +478,9 @@
         </select>
       </div>
     </div>
-
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-save" onclick="saveItem()">Save item</button>
+      <button class="btn-save" id="btnSave" onclick="saveItem()">Save item</button>
     </div>
   </div>
 </div>
@@ -449,120 +492,156 @@
     <p>This action cannot be undone.</p>
     <div class="confirm-actions">
       <button class="btn-cancel" onclick="closeConfirm()">Cancel</button>
-      <button class="btn-danger" onclick="confirmDelete()">Remove</button>
+      <button class="btn-danger" id="btnConfirmDel" onclick="confirmDelete()">Remove</button>
     </div>
   </div>
 </div>
 
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
 <script>
-  // ── Data ──────────────────────────────────────────────
-  const STORAGE_KEY = 'pending_items_v1';
-
-  function loadItems() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-    catch { return []; }
-  }
-
-  function saveItems(items) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }
-
-  let items = loadItems();
-
-  // Pre-load a sample item if first visit
-  if (items.length === 0) {
-    items = [
-      {
-        id: Date.now(),
-        title: 'Provide expected data for runtime license test',
-        desc: 'The team needs the expected test dataset to validate the new runtime license before release.',
-        notes: 'CAT-IM release — coordinate with QA team.',
-        priority: 'high',
-        status: 'pending',
-        created: new Date().toISOString()
-      }
-    ];
-    saveItems(items);
-  }
+  // ── Config ────────────────────────────────────────────
+  const URL_KEY = 'pending_items_script_url';
+  let SCRIPT_URL = localStorage.getItem(URL_KEY) || '';
 
   // ── State ─────────────────────────────────────────────
-  let filterStatus = 'all';
-  let filterPriority = 'all';
-  let searchText = '';
-  let editingId = null;
-  let deletingId = null;
+  let items         = [];
+  let filterStatus  = 'all';
+  let filterPriority= 'all';
+  let searchText    = '';
+  let editingId     = null;
+  let deletingId    = null;
+  let isBusy        = false;
+
+  // ── Init ──────────────────────────────────────────────
+  document.getElementById('headerDate').textContent = new Date().toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
+
+  if (SCRIPT_URL) {
+    document.getElementById('setupBanner').classList.add('hidden');
+    document.getElementById('setupUrl').value = SCRIPT_URL;
+    loadItems();
+  } else {
+    setSyncState('error', 'Not connected — paste your Apps Script URL above');
+    renderItems();
+  }
+
+  // ── Setup URL ─────────────────────────────────────────
+  function saveScriptUrl() {
+    const val = document.getElementById('setupUrl').value.trim();
+    if (!val || !val.startsWith('https://')) {
+      showToast('Please enter a valid URL.', true); return;
+    }
+    SCRIPT_URL = val;
+    localStorage.setItem(URL_KEY, SCRIPT_URL);
+    document.getElementById('setupBanner').classList.add('hidden');
+    loadItems();
+  }
+
+  // ── Sync state ────────────────────────────────────────
+  function setSyncState(state, label) {
+    const dot = document.getElementById('syncDot');
+    const lbl = document.getElementById('syncLabel');
+    dot.className = 'sync-dot ' + (state || '');
+    lbl.textContent = label;
+  }
+
+  // ── API helpers ───────────────────────────────────────
+  async function apiFetch(params) {
+    if (!SCRIPT_URL) throw new Error('No script URL configured');
+    const url = SCRIPT_URL + '?' + new URLSearchParams(params).toString();
+    const res  = await fetch(url);
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error || 'API error');
+    return json;
+  }
+
+  // ── Load items ────────────────────────────────────────
+  async function loadItems() {
+    setSyncState('loading', 'Syncing…');
+    try {
+      const data = await apiFetch({ action: 'get' });
+      items = data.items || [];
+      setSyncState('ok', 'Synced — ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+      renderItems();
+    } catch (e) {
+      setSyncState('error', 'Connection error — ' + e.message);
+      showToast('Could not load items: ' + e.message, true);
+      renderItems();
+    }
+  }
 
   // ── Render ────────────────────────────────────────────
-  function render() {
+  function renderItems() {
     const container = document.getElementById('itemsContainer');
+
+    if (!SCRIPT_URL) {
+      container.innerHTML = `<div class="state-box"><div class="icon">🔗</div><p>Configure the Apps Script URL above to get started.</p></div>`;
+      return;
+    }
 
     let filtered = items.filter(item => {
       if (filterStatus !== 'all' && item.status !== filterStatus) return false;
       if (filterPriority !== 'all' && item.priority !== filterPriority) return false;
       if (searchText) {
         const q = searchText.toLowerCase();
-        if (!item.title.toLowerCase().includes(q) &&
-            !item.desc.toLowerCase().includes(q) &&
-            !item.notes.toLowerCase().includes(q)) return false;
+        if (!(item.title||'').toLowerCase().includes(q) &&
+            !(item.desc||'').toLowerCase().includes(q) &&
+            !(item.notes||'').toLowerCase().includes(q)) return false;
       }
       return true;
     });
 
-    // Sort: blocked & high first, done last
-    const order = { blocked: 0, pending: 1, 'in-progress': 2, done: 3 };
+    const order  = { blocked: 0, pending: 1, 'in-progress': 2, done: 3 };
     const pOrder = { high: 0, medium: 1, low: 2 };
     filtered.sort((a, b) => {
-      if (order[a.status] !== order[b.status]) return order[a.status] - order[b.status];
-      return pOrder[a.priority] - pOrder[b.priority];
+      const sd = (order[a.status]||1) - (order[b.status]||1);
+      if (sd !== 0) return sd;
+      return (pOrder[a.priority]||1) - (pOrder[b.priority]||1);
     });
 
-    // Stats (always from full items, exclude done)
     const active = items.filter(i => i.status !== 'done');
-    document.getElementById('statTotal').textContent = active.length;
-    document.getElementById('statHigh').textContent = active.filter(i => i.priority === 'high').length;
+    document.getElementById('statTotal').textContent    = active.length;
+    document.getElementById('statHigh').textContent     = active.filter(i => i.priority === 'high').length;
     document.getElementById('statProgress').textContent = items.filter(i => i.status === 'in-progress').length;
-    document.getElementById('statBlocked').textContent = items.filter(i => i.status === 'blocked').length;
+    document.getElementById('statBlocked').textContent  = items.filter(i => i.status === 'blocked').length;
 
     if (filtered.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">✅</div>
-          <p>No items match the current filters.</p>
-        </div>`;
+      container.innerHTML = `<div class="state-box"><div class="icon">✅</div><p>No items match the current filters.</p></div>`;
       return;
     }
 
+    const statusLabel = { pending: 'Pending', 'in-progress': 'In Progress', blocked: 'Blocked', done: 'Done' };
     container.innerHTML = filtered.map(item => {
-      const priorityLabel = item.priority.charAt(0).toUpperCase() + item.priority.slice(1);
-      const statusLabel = { pending: 'Pending', 'in-progress': 'In Progress', blocked: 'Blocked', done: 'Done' }[item.status];
-      const created = new Date(item.created).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-
+      const pLabel = (item.priority||'medium');
+      const pCap   = pLabel.charAt(0).toUpperCase() + pLabel.slice(1);
+      const created = item.created ? new Date(item.created).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
       return `
-        <div class="item-card ${item.status === 'done' ? 'done' : ''}" data-priority="${item.priority}">
+        <div class="item-card ${item.status === 'done' ? 'done' : ''}" data-priority="${item.priority||'medium'}">
           <div class="card-top">
-            <div class="card-title">${escHtml(item.title)}</div>
+            <div class="card-title">${esc(item.title)}</div>
             <div class="card-actions">
-              <button class="action-btn" title="Edit" onclick="openModal(${item.id})">✏️</button>
-              <button class="action-btn delete" title="Remove" onclick="askDelete(${item.id})">🗑️</button>
+              <button class="action-btn" title="Edit"   onclick="openModal('${item.id}')">✏️</button>
+              <button class="action-btn delete" title="Remove" onclick="askDelete('${item.id}')">🗑️</button>
             </div>
           </div>
-          ${item.desc ? `<div class="card-desc">${escHtml(item.desc)}</div>` : ''}
-          ${item.notes ? `<div class="card-notes">${escHtml(item.notes)}</div>` : ''}
+          ${item.desc  ? `<div class="card-desc">${esc(item.desc)}</div>` : ''}
+          ${item.notes ? `<div class="card-notes">${esc(item.notes)}</div>` : ''}
           <div class="card-footer">
-            <span class="badge-priority ${item.priority}">${priorityLabel}</span>
-            <span class="badge-status ${item.status}">${statusLabel}</span>
+            <span class="badge-priority ${item.priority||'medium'}">${pCap}</span>
+            <span class="badge-status ${item.status||'pending'}">${statusLabel[item.status]||'Pending'}</span>
             <span class="card-created">${created}</span>
           </div>
         </div>`;
     }).join('');
   }
 
-  function escHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+  function esc(str) {
+    return String(str||'')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   // ── Filters ───────────────────────────────────────────
@@ -570,43 +649,36 @@
     filterStatus = val;
     document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    render();
+    renderItems();
   }
-
   function setPriorityFilter(val, btn) {
     filterPriority = val;
     document.querySelectorAll('[data-pfilter]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    render();
+    renderItems();
   }
-
-  function setSearch(val) {
-    searchText = val.trim();
-    render();
-  }
+  function setSearch(val) { searchText = val.trim(); renderItems(); }
 
   // ── Modal ─────────────────────────────────────────────
   function openModal(id) {
     editingId = id || null;
-    const overlay = document.getElementById('modalOverlay');
     document.getElementById('modalTitle').textContent = id ? 'Edit Item' : 'New Item';
-
     if (id) {
-      const item = items.find(i => i.id === id);
-      document.getElementById('fTitle').value = item.title;
-      document.getElementById('fDesc').value = item.desc;
-      document.getElementById('fNotes').value = item.notes;
-      document.getElementById('fPriority').value = item.priority;
-      document.getElementById('fStatus').value = item.status;
+      const item = items.find(i => String(i.id) === String(id));
+      if (!item) return;
+      document.getElementById('fTitle').value    = item.title  || '';
+      document.getElementById('fDesc').value     = item.desc   || '';
+      document.getElementById('fNotes').value    = item.notes  || '';
+      document.getElementById('fPriority').value = item.priority || 'medium';
+      document.getElementById('fStatus').value   = item.status  || 'pending';
     } else {
-      document.getElementById('fTitle').value = '';
-      document.getElementById('fDesc').value = '';
-      document.getElementById('fNotes').value = '';
+      document.getElementById('fTitle').value    = '';
+      document.getElementById('fDesc').value     = '';
+      document.getElementById('fNotes').value    = '';
       document.getElementById('fPriority').value = 'medium';
-      document.getElementById('fStatus').value = 'pending';
+      document.getElementById('fStatus').value   = 'pending';
     }
-
-    overlay.classList.add('open');
+    document.getElementById('modalOverlay').classList.add('open');
     setTimeout(() => document.getElementById('fTitle').focus(), 50);
   }
 
@@ -615,32 +687,38 @@
     editingId = null;
   }
 
-  function saveItem() {
+  async function saveItem() {
+    if (isBusy) return;
     const title = document.getElementById('fTitle').value.trim();
     if (!title) {
-      document.getElementById('fTitle').focus();
-      document.getElementById('fTitle').style.borderColor = 'var(--high)';
-      setTimeout(() => document.getElementById('fTitle').style.borderColor = '', 1500);
+      const f = document.getElementById('fTitle');
+      f.style.borderColor = 'var(--high)';
+      f.focus();
+      setTimeout(() => f.style.borderColor = '', 1500);
       return;
     }
 
     const data = {
+      id:       editingId,
       title,
-      desc: document.getElementById('fDesc').value.trim(),
-      notes: document.getElementById('fNotes').value.trim(),
+      desc:     document.getElementById('fDesc').value.trim(),
+      notes:    document.getElementById('fNotes').value.trim(),
       priority: document.getElementById('fPriority').value,
-      status: document.getElementById('fStatus').value,
+      status:   document.getElementById('fStatus').value,
     };
 
-    if (editingId) {
-      items = items.map(i => i.id === editingId ? { ...i, ...data } : i);
-    } else {
-      items.push({ id: Date.now(), created: new Date().toISOString(), ...data });
+    setBusy(true);
+    try {
+      const action = editingId ? 'update' : 'add';
+      await apiFetch({ action, data: encodeURIComponent(JSON.stringify(data)) });
+      closeModal();
+      showToast(editingId ? 'Item updated.' : 'Item added.');
+      await loadItems();
+    } catch (e) {
+      showToast('Error saving item: ' + e.message, true);
+    } finally {
+      setBusy(false);
     }
-
-    saveItems(items);
-    closeModal();
-    render();
   }
 
   // ── Delete ────────────────────────────────────────────
@@ -648,17 +726,42 @@
     deletingId = id;
     document.getElementById('confirmOverlay').classList.add('open');
   }
-
   function closeConfirm() {
     document.getElementById('confirmOverlay').classList.remove('open');
     deletingId = null;
   }
+  async function confirmDelete() {
+    if (isBusy || !deletingId) return;
+    setBusy(true);
+    try {
+      await apiFetch({ action: 'delete', id: deletingId });
+      closeConfirm();
+      showToast('Item removed.');
+      await loadItems();
+    } catch (e) {
+      showToast('Error removing item: ' + e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  }
 
-  function confirmDelete() {
-    items = items.filter(i => i.id !== deletingId);
-    saveItems(items);
-    closeConfirm();
-    render();
+  // ── Busy state ────────────────────────────────────────
+  function setBusy(busy) {
+    isBusy = busy;
+    document.getElementById('btnAdd').disabled  = busy;
+    document.getElementById('btnSave').disabled = busy;
+    const delBtn = document.getElementById('btnConfirmDel');
+    if (delBtn) delBtn.disabled = busy;
+  }
+
+  // ── Toast ─────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg, isError) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className   = 'toast show' + (isError ? ' error' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.className = 'toast', 3000);
   }
 
   // ── Keyboard shortcuts ────────────────────────────────
@@ -668,22 +771,8 @@
       if (e.target.tagName !== 'TEXTAREA') saveItem();
     }
   });
-
-  // Close modal on overlay click
-  document.getElementById('modalOverlay').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closeModal();
-  });
-  document.getElementById('confirmOverlay').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closeConfirm();
-  });
-
-  // ── Date header ───────────────────────────────────────
-  document.getElementById('headerDate').textContent = new Date().toLocaleDateString('en-GB', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-  });
-
-  // ── Init ──────────────────────────────────────────────
-  render();
+  document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+  document.getElementById('confirmOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeConfirm(); });
 </script>
 </body>
 </html>
